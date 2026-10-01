@@ -1,0 +1,54 @@
+# Локальный стенд: API + Postgres + Redis
+# Запуск: docker compose up --build -d
+# API:    http://127.0.0.1:8000/docs
+# Health: http://127.0.0.1:8000/api/health
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: essentials
+      POSTGRES_PASSWORD: essentials
+      POSTGRES_DB: essentials
+    ports:
+      # На хост пробрасываем 5432 — удобно смотреть из DBeaver / локального uv
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # api стартует только когда Postgres готов принимать соединения
+      test: ["CMD-SHELL", "pg_isready -U essentials -d essentials"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      # Имена хостов db/redis — DNS внутри docker-сети compose
+      DATABASE_URL: postgresql+asyncpg://essentials:essentials@db:5432/essentials
+      REDIS_URL: redis://redis:6379/0
+      DEBUG: "false"
+      RATE_LIMIT_ENABLED: "true"
+      RATE_LIMIT_REQUESTS: "120"
+      RATE_LIMIT_WINDOW_SECONDS: "60"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata: # данные Postgres переживают docker compose down (без -v)
