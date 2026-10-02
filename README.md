@@ -32,6 +32,10 @@ docker compose up --build -d
 curl http://127.0.0.1:8000/api/health
 ```
 
+pgAdmin: http://127.0.0.1:5050  
+Логин: `admin@example.com` / `admin`  
+Сервер уже в списке (`essentials (docker)`); пароль БД при подключении: `essentials`.
+
 Сиды:
 
 ```powershell

@@ -1,7 +1,8 @@
-# Локальный стенд: API + Postgres + Redis
+# Локальный стенд: API + Postgres + Redis + pgAdmin
 # Запуск: docker compose up --build -d
-# API:    http://127.0.0.1:8000/docs
-# Health: http://127.0.0.1:8000/api/health
+# API:     http://127.0.0.1:8000/docs
+# Health:  http://127.0.0.1:8000/api/health
+# pgAdmin: http://127.0.0.1:5050  (admin@example.com / admin)
 
 services:
   db:
@@ -31,6 +32,22 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:8
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      # Преднастроенный сервер "essentials (docker)" → хост db
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
 
   api:
     build: .
