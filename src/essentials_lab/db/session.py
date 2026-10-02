@@ -7,6 +7,7 @@ AsyncSession нельзя использовать как sync Eloquent — ве
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import AsyncIterator
 
 from sqlalchemy.ext.asyncio import (
@@ -16,8 +17,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from essentials_lab.config import Settings
-from essentials_lab.db.models import Base
+from essentials_lab.config import Settings, get_settings
+from essentials_lab.db.migrate import run_migrations
 
 
 def create_engine(settings: Settings) -> AsyncEngine:
@@ -40,15 +41,14 @@ def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSessi
     return async_sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 
-async def init_db(engine: AsyncEngine) -> None:
+async def init_db(settings: Settings | None = None) -> None:
     """
-    Создать таблицы, если их ещё нет (учебный упрощённый вариант миграций).
+    Накатить Alembic-миграции (≈ php artisan migrate).
 
-    В проде обычно Alembic (≈ Laravel migrations).
-    run_sync нужен, потому что metadata.create_all — синхронный API.
+    Раньше здесь был metadata.create_all(); теперь схема в alembic/versions/.
+    to_thread — потому что Alembic env.py сам вызывает asyncio.run.
     """
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await asyncio.to_thread(run_migrations, settings or get_settings())
 
 
 async def session_scope(

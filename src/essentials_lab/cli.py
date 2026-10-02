@@ -22,8 +22,8 @@ from essentials_lab.repositories import TicketRepository
 async def seed(*, count: int) -> None:
     """Создать count тикетов с заметкой; чётные — сразу in_progress."""
     settings = get_settings()
+    await init_db(settings)
     engine = create_engine(settings)
-    await init_db(engine)
     factory = create_session_factory(engine)
 
     async with factory() as session:

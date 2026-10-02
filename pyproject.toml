@@ -8,6 +8,7 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "alembic>=1.20.0",
     "asyncpg>=0.31.0",
     "fastapi>=0.142.1",
     "httpx>=0.28.1",
@@ -20,6 +21,7 @@ dependencies = [
 [project.scripts]
 essentials-seed = "essentials_lab.cli:main"
 essentials-api = "essentials_lab.main:run"
+essentials-migrate = "essentials_lab.db.migrate:main"
 
 [build-system]
 requires = ["uv_build>=0.12.21,<0.13.0"]

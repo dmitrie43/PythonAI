@@ -3,7 +3,7 @@
 
 uvicorn essentials_lab.main:app  — импортирует объект app ниже.
 lifespan ≈ Laravel AppServiceProvider boot + shutdown:
-  на старте открываем DB/Redis и создаём таблицы,
+  на старте открываем DB/Redis и накатываем Alembic-миграции,
   на остановке закрываем соединения.
 """
 
@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # decode_responses=True → Redis отдаёт str, не bytes
     app.state.redis = Redis.from_url(settings.redis_url, decode_responses=True)
 
-    await init_db(engine)  # create tables if missing
+    await init_db(settings)  # alembic upgrade head
     try:
         yield  # приложение работает, принимает запросы
     finally:

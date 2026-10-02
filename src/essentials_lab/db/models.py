@@ -16,7 +16,7 @@ from essentials_lab.domain import TicketStatus
 
 
 class Base(DeclarativeBase):
-    """Базовый класс всех таблиц. metadata.create_all() берёт схемы отсюда."""
+    """Базовый класс всех таблиц. Схему накатывает Alembic (не create_all)."""
 
     pass
 

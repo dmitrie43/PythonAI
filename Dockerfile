@@ -14,12 +14,14 @@ ENV UV_COMPILE_BYTECODE=1 \
     PATH="/app/.venv/bin:$PATH"
 
 # Сначала манифест, потом код — лучше кэш слоёв Docker при правках только src/
-COPY pyproject.toml README.md ./
+COPY pyproject.toml README.md alembic.ini ./
 COPY src ./src
+COPY alembic ./alembic
 
 # Ставим зависимости и editable-пакет (появляются essentials-api / essentials-seed)
 RUN uv sync --no-dev
 
 EXPOSE 8000
 # uvicorn импортирует объект app из essentials_lab.main
+# При старте lifespan выполнит alembic upgrade head
 CMD ["uvicorn", "essentials_lab.main:app", "--host", "0.0.0.0", "--port", "8000"]

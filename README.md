@@ -14,6 +14,7 @@
 | CLI + asyncio | `cli.py` | `artisan` command |
 | Docker Compose | `docker-compose.yml` | Sail / свой compose |
 | Middleware + rate limit | `api/middleware.py` | Middleware + `RateLimiter` |
+| Миграции БД | `alembic/` | Laravel migrations |
 | Тесты | `tests/` | PHPUnit / Pest |
 
 Домен: **тикеты поддержки + заметки** (задел под пилот Docs/Ticket Assistant).
@@ -88,6 +89,30 @@ src/essentials_lab/
   api/middleware.py  # Request-ID + Redis rate limit
   main.py            # FastAPI app
   cli.py             # async seed
+
+alembic/
+  versions/          # миграции схемы (≈ database/migrations)
+  env.py             # связь с Base.metadata + DATABASE_URL
+```
+
+## Alembic (миграции)
+
+При старте API lifespan делает `alembic upgrade head` (как `artisan migrate`).
+
+```powershell
+# вручную
+uv run alembic upgrade head
+uv run alembic current
+uv run alembic revision --autogenerate -m "add something"
+# или
+uv run essentials-migrate
+```
+
+Если раньше таблицы создавались через `create_all` без alembic_version — проще пересоздать том:
+
+```powershell
+docker compose down -v
+docker compose up --build -d
 ```
 
 ## Middleware / rate limit
